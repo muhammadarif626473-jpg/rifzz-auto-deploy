@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rifzz Auto Deploy</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#131b30;--line:#293550;--muted:#9eabc4;--accent:#9b8cff;--green:#58d6a2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2350 0,transparent 55%),var(--bg);font:16px system-ui,-apple-system,Segoe UI,sans-serif;color:#f4f6ff;min-height:100vh}
+.wrap{max-width:980px;margin:auto;padding:28px 18px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px}
+.brand{display:flex;gap:12px;align-items:center}.logo{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#9b8cff,#5b8cff);font-weight:900;color:#10142a}
+h1{font-size:clamp(24px,5vw,38px);margin:0;letter-spacing:-1px}.sub{color:var(--muted);margin-top:5px}.pill{border:1px solid var(--line);padding:8px 12px;border-radius:99px;color:var(--muted);font-size:13px}
+.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(130deg,#171f3a,#111729);margin-bottom:18px}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:800}.hero h2{font-size:clamp(25px,5vw,40px);line-height:1.1;margin:12px 0}.hero p{color:var(--muted);max-width:650px;line-height:1.65}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.panel{background:#11182a;border:1px solid var(--line);border-radius:20px;padding:22px}.panel h3{margin:0 0 8px;font-size:18px}.hint{color:var(--muted);font-size:13px;line-height:1.5}
+label{display:block;margin:20px 0 8px;font-size:14px;color:#dce3f7}input,select{width:100%;padding:14px;border-radius:12px;border:1px solid #34415f;background:#0a1020;color:#fff;font:inherit;outline:none}input:focus,select:focus{border-color:var(--accent)}
+button{border:0;border-radius:12px;padding:14px 18px;background:var(--accent);color:#0b1020;font-weight:800;font-size:15px;cursor:pointer;width:100%;margin-top:16px}button:disabled{opacity:.55;cursor:wait}
+.status{margin-top:16px;border-radius:12px;padding:13px;background:#0a1020;border:1px solid var(--line);color:var(--muted);font-size:14px;overflow-wrap:anywhere;line-height:1.55}.status.good{color:var(--green)}.status.bad{color:#ff9aab}
+.steps{display:grid;gap:15px;margin-top:18px}.step{display:flex;gap:12px}.num{flex:none;width:28px;height:28px;border-radius:9px;background:#242b49;color:#c4baff;display:grid;place-items:center;font-weight:800}.step b{display:block;font-size:14px;margin-bottom:4px}.step span{font-size:13px;color:var(--muted);line-height:1.5}
+footer{color:#7f8ba5;text-align:center;font-size:12px;margin-top:25px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.pill{display:none}.hero{padding:22px}.panel{padding:18px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div class="brand"><div class="logo">R</div><div><h1>Rifzz Auto Deploy</h1><div class="sub">Deployment dashboard</div></div></div><div class="pill">Vercel API · Secure backend</div></header>
+<section class="hero"><div class="eyebrow">Deploy workspace</div><h2>Deploy proyek.<br>Lebih sederhana.</h2><p>Jalankan deployment untuk proyek Vercel yang sudah terhubung ke repositori Git. Token akses disimpan di server, bukan di browser.</p></section>
+<div class="grid">
+<section class="panel"><h3>Mulai deployment</h3><div class="hint">Masukkan nama proyek yang sudah ada di akun Vercel kamu.</div>
+<form id="deployForm"><label for="project">Nama proyek Vercel</label><input id="project" name="project" placeholder="contoh: rifzz-generate-api" required maxlength="100" pattern="[A-Za-z0-9_-]+" autocomplete="off">
+<label for="target">Jenis deployment</label><select id="target"><option value="production">Production</option><option value="preview">Preview</option></select>
+<button id="submit" type="submit">Mulai Deployment ↗</button></form>
+<div id="status" class="status" role="status">Memeriksa konfigurasi server…</div>
+</section>
+<aside class="panel"><h3>Langkah penggunaan</h3><div class="steps">
+<div class="step"><div class="num">1</div><div><b>Hubungkan GitHub</b><span>Pastikan proyek Vercel sudah terhubung ke repositori Git.</span></div></div>
+<div class="step"><div class="num">2</div><div><b>Atur token di server</b><span>Tambahkan VERCEL_TOKEN pada Environment Variables hosting. Jangan masukkan token ke HTML.</span></div></div>
+<div class="step"><div class="num">3</div><div><b>Deploy</b><span>Masukkan nama proyek dan tekan tombol deployment.</span></div></div></div>
+<div class="status">Catatan: ini memicu deployment proyek yang sudah ada; bukan membuat proyek baru dari URL GitHub sembarang.</div>
+</aside></div>
+<footer>Rifzz Auto Deploy · Simpan token API secara rahasia</footer>
+</main>
+<script>
+const statusBox=document.querySelector("#status"), button=document.querySelector("#submit");
+async function check(){try{const r=await fetch("/api/status");const d=await r.json();statusBox.textContent=d.configured?"Server siap. Masukkan nama proyek untuk melanjutkan.":"Frontend aktif, tetapi server belum memiliki VERCEL_TOKEN.";statusBox.className="status "+(d.configured?"good":"bad")}catch{statusBox.textContent="Tidak dapat memeriksa status server.";statusBox.className="status bad"}}
+document.querySelector("#deployForm").addEventListener("submit",async e=>{e.preventDefault();button.disabled=true;button.textContent="Memproses…";statusBox.className="status";statusBox.textContent="Mengirim permintaan ke server…";
+try{const r=await fetch("/api/deploy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({project:document.querySelector("#project").value.trim(),target:document.querySelector("#target").value})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Deployment gagal.");statusBox.className="status good";statusBox.textContent="Permintaan deployment diterima. Status: "+d.state+(d.url?" · URL: "+d.url:"");if(d.url){const a=document.createElement("a");a.href=d.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Buka hasil deployment";a.style.display="block";a.style.marginTop="8px";a.style.color="#9b8cff";statusBox.appendChild(document.createElement("br"));statusBox.appendChild(a)}}catch(err){statusBox.className="status bad";statusBox.textContent=err.message}finally{button.disabled=false;button.textContent="Mulai Deployment ↗"}});
+check();
+</script></body></html>
